@@ -12,3 +12,11 @@
 ```
 docker run -it --rm dockette/ssh /bin/bash
 ```
+
+```
+# ED25519
+$ ssh-keygen -t ed25519 -C "Your key"
+
+# RSA
+$ ssh-keygen -t rsa -b 4096 -C "Your key"
+```
