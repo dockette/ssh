@@ -1,4 +1,4 @@
-FROM dockette/alpine:3.17
+FROM dockette/alpine:3.23
 
 MAINTAINER Milan Sulc <sulcmil@gmail.com>
 
