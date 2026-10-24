@@ -44,17 +44,50 @@ jobs:
       - name: Test shell availability
         run: docker run --rm dockette/ssh:latest-test sh -lc 'command -v sh && command -v bash'
 
+  version:
+    name: "Version"
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read VERSION
+        id: version
+        run: echo "version=$(cat VERSION)" >> "$GITHUB_OUTPUT"
+
   build:
     name: "Build"
-    needs: test
+    needs: [test, version]
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ["latest", "${{ needs.version.outputs.version }}"]
     uses: dockette/.github/.github/workflows/docker.yml@master
     secrets: inherit
     with:
       image: "dockette/ssh"
-      tag: "latest"
+      tag: ${{ matrix.tag }}
       context: "."
       platforms: "linux/amd64,linux/arm64"
       push: ${{ github.ref == 'refs/heads/master' }}
+
+  release:
+    name: "Release"
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release view "$(cat VERSION)" || gh release create "$(cat VERSION)" --generate-notes
 
   docs:
     name: "Docs"
