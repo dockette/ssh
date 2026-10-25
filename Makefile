@@ -1,4 +1,5 @@
 DOCKER_IMAGE=dockette/ssh
+include VERSION
 
 build: docker-build
 
@@ -18,3 +19,12 @@ docker-build:
 		--pull \
 		-t ${DOCKER_IMAGE} \
 		.
+
+.PHONY: version
+version:
+	@echo ${VERSION}
+
+.PHONY: release
+release:
+	@sed -i.bak "s/^VERSION=.*/VERSION=$$(date -u +%Y.%m.%d)/" VERSION && rm VERSION.bak
+	@cat VERSION
